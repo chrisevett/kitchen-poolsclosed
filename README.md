@@ -1,5 +1,7 @@
 # Kitchen::Poolsclosed
 
+![](http://i.imgur.com/QnCGPzK.png)
+
 [test-kitchen](www.kitchen.ci) Plugin for [poolsclosed](www.github.com/chrisevett/poolsclosed)
 
 
