@@ -10,8 +10,16 @@
     $ gem install kitchen-poolsclosed
 
 ## .kitchen.yml config
+	  driver:  
+	    name: poolsclosed  
+	    poolsclosed_baseurl: http://path.tomy.rundeck.com/  
+	
+	  transport:  
+	    name: winrm  
+	    username: administrator  
+	    password: mysupersecretpassword  
 
-TODO: config 
+Note: this currently only supports windows. Yes the bit that touches the operating system is independent of this driver. Don't ask questions. 
 
 ## Contributing
 
