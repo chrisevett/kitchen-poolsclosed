@@ -8,7 +8,7 @@ require 'kitchen/transport/dummy'
 require 'kitchen/verifier/dummy'
 require 'webmock/rspec'
 
-describe Kitchen::Driver::PoolsClosed do
+describe Kitchen::Driver::Poolsclosed do
   # it looks like this is all boilerplate because i see it in
   # the kitchen-vagrant and kitchen-ec2 projects
   # maybe the one dude copied the other
@@ -16,7 +16,7 @@ describe Kitchen::Driver::PoolsClosed do
   let(:logged_output) { StringIO.new }
   let(:logger)        { Logger.new(logged_output) }
   let(:config)        { { kitchen_root: '/kroot', poolsclosed_baseurl: 'http://mypool:42069/' } }
-  let(:platform)      { Kitchen::Platform.new(name: 'fooos-99') }
+  let(:platform)      { Kitchen::Platform.new(name: 'windows2012r2') }
   let(:suite)         { Kitchen::Suite.new(name: 'suitey') }
   let(:verifier)      { Kitchen::Verifier::Dummy.new }
   let(:provisioner)   { Kitchen::Provisioner::Dummy.new }
@@ -24,7 +24,7 @@ describe Kitchen::Driver::PoolsClosed do
   let(:state_file)    { double('state_file') }
   let(:state)         { Hash.new }
   let(:env)           { Hash.new }
-  let(:driver_object) { Kitchen::Driver::PoolsClosed.new(config) }
+  let(:driver_object) { Kitchen::Driver::Poolsclosed.new(config) }
 
   let(:driver) do
     d = driver_object
@@ -47,33 +47,33 @@ describe Kitchen::Driver::PoolsClosed do
 
   before(:each) { stub_const('ENV', env) }
 
-  describe 'configuration' do
-    context 'non windows platform' do
-      before { allow(platform).to receive(:os_type).and_return('unix') }
-
-      it 'throws an error' do
-        expect { driver.verify_dependencies }.to raise_error(
-          Kitchen::UserError, /Error. Only windows is supported./
-        )
-      end
-    end
-
-    context 'windows platform' do
-      before { allow(platform).to receive(:os_type).and_return('windows') }
-
-      it 'does not throw a platform error' do
-        expect { driver.verify_dependencies }.to_not raise_error
-      end
-    end
-
-    # not sure if this is needed. seems like we are testing
-    # the core test-kitchen at this point
-    # the logic for handling config is in test kitchen
-    context 'bad configuration values' do
-    end
-  end
-
   describe '#create' do
+
+    # note: decided to check for the platform on create 
+    # because test-kitchen hasn't instantiated the platform
+    # object when we do the verify step. 
+    context 'windows platform' do
+      
+      before {allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox') }
+      before { allow(platform).to receive(:os_type).and_return('windows') }  
+
+      it 'does not throw an error when the os is windows' do
+        expect { driver.create(state) }.to_not raise_error
+      end 
+    end
+
+    context 'not windows platform' do
+      before { allow(platform).to receive(:os_type).and_return('unix') } 
+  
+      before { allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox') }
+      it 'throws an error when the os is unix' do
+        expect { driver.create(state) }.to raise_error(
+         Kitchen::UserError, /Error. Only windows is supported./
+         )
+      end 
+    end
+
+ 
     context 'instances are available, happy path' do
       it 'sets the machine name based on poolsclosed' do
         allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox')

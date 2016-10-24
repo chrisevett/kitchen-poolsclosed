@@ -41,23 +41,21 @@ require 'kitchen/driver/poolsclosed_version'
 
 module Kitchen
   module Driver
-    class PoolsClosed < Kitchen::Driver::Base
+    class Poolsclosed < Kitchen::Driver::Base
       kitchen_driver_api_version 2
       plugin_version Kitchen::Driver::POOLSCLOSED_VERSION
 
       required_config :poolsclosed_baseurl
       no_parallel_for :create, :destroy
 
-      def verify_dependencies
-        super
-        os_type = instance.platform.os_type
-        raise Kitchen::UserError, /Error. Only windows is supported./ unless os_type == 'windows'
-      end
 
       # this is defined in the base plugin
       def create(state)
+        # we are checking the config here instead of when the class is loaded because 
+        # test-kitchen doesn't have the platform object instantiated until we call create
+        raise Kitchen::UserError, /Error. Only windows is supported./ unless windows_os?
         newhost = poolsclosed_machine
-        raise Kitchen::InstanceFailure, 'Error, no available instances in poolsclosed' if newhost.nil?
+        raise Kitchen::InstanceFailure, /Error, no available instances in poolsclosed/ if newhost.nil?
         state[:hostname] = newhost
       end
 
