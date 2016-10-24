@@ -48,10 +48,9 @@ module Kitchen
       required_config :poolsclosed_baseurl
       no_parallel_for :create, :destroy
 
-
       # this is defined in the base plugin
       def create(state)
-        # we are checking the config here instead of when the class is loaded because 
+        # we are checking the config here instead of when the class is loaded because
         # test-kitchen doesn't have the platform object instantiated until we call create
         raise Kitchen::UserError, /Error. Only windows is supported./ unless windows_os?
         newhost = poolsclosed_machine
@@ -65,7 +64,7 @@ module Kitchen
                                 headers: { content_type: :json }).execute do |rsp, _request, _result|
           case rsp.code
           when 200
-            rsp.machineRelease[0]
+            JSON.parse(rsp.body)['machineRelease']
           else
             raise Kitchen::InstanceFailure, "Error, could not obtain machine name from poolsclosed. Error code #{rsp.code}"
           end
@@ -73,7 +72,7 @@ module Kitchen
       end
 
       # this will generate false positives, but poolsclosed should handle it
-      def delete(state)
+      def destroy(state)
         hostname = state[:hostname]
         poolsclosed_delete(hostname)
         state.delete(:hostname)
@@ -85,7 +84,7 @@ module Kitchen
                                 headers: { content_type: :json, params: { machineName: hostname } }).execute do |rsp, _request, _result|
           case rsp.code
           when 200
-            rsp.machineRelease[0]
+            JSON.parse(rsp.body)['machineDelete']
           else
             raise Kitchen::InstanceFailure, "Error, could not delete machine from poolsclosed. Error code #{rsp.code}"
           end

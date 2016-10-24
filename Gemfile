@@ -4,3 +4,5 @@ source 'https://rubygems.org'
 gemspec
 gem 'kitchen'
 gem 'webmock'
+gem 'pry-byebug'
+gem 'rest-client'

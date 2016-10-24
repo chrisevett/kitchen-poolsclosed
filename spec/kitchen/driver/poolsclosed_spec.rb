@@ -48,32 +48,29 @@ describe Kitchen::Driver::Poolsclosed do
   before(:each) { stub_const('ENV', env) }
 
   describe '#create' do
-
-    # note: decided to check for the platform on create 
+    # note: decided to check for the platform on create
     # because test-kitchen hasn't instantiated the platform
-    # object when we do the verify step. 
+    # object when we do the verify step.
     context 'windows platform' do
-      
-      before {allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox') }
-      before { allow(platform).to receive(:os_type).and_return('windows') }  
+      before { allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox') }
+      before { allow(platform).to receive(:os_type).and_return('windows') }
 
       it 'does not throw an error when the os is windows' do
         expect { driver.create(state) }.to_not raise_error
-      end 
+      end
     end
 
     context 'not windows platform' do
-      before { allow(platform).to receive(:os_type).and_return('unix') } 
-  
+      before { allow(platform).to receive(:os_type).and_return('unix') }
+
       before { allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox') }
       it 'throws an error when the os is unix' do
         expect { driver.create(state) }.to raise_error(
-         Kitchen::UserError, /Error. Only windows is supported./
-         )
-      end 
+          Kitchen::UserError, /Error. Only windows is supported./
+        )
+      end
     end
 
- 
     context 'instances are available, happy path' do
       it 'sets the machine name based on poolsclosed' do
         allow(driver).to receive(:poolsclosed_machine).and_return('mynewbox')
@@ -107,13 +104,13 @@ describe Kitchen::Driver::Poolsclosed do
     context 'connection available, happy path' do
       it 'calls delete in poolsclosed with hostname from state' do
         allow(driver).to receive(:poolsclosed_delete).and_return(true)
-        expect { driver.delete(state) }.to_not raise_error
+        expect { driver.destroy(state) }.to_not raise_error
       end
 
       it 'calls delete in state' do
         state[:hostname] = 'myawesomebox'
         allow(driver).to receive(:poolsclosed_delete).and_return(true)
-        driver.delete(state)
+        driver.destroy(state)
         expect(state).to_not include(hostname: 'myawesomebox')
       end
     end
@@ -123,7 +120,7 @@ describe Kitchen::Driver::Poolsclosed do
         state[:hostname] = 'myawesomebox'
         stub_request(:any, "#{config[:poolsclosed_baseurl]}machine?machineName=myawesomebox")
           .to_return(status: [500, 'FUUUCK'])
-        expect { driver.delete(state) }.to raise_error(
+        expect { driver.destroy(state) }.to raise_error(
           Kitchen::InstanceFailure, /Error, could not delete machine from poolsclosed. Error code 500/
         )
       end
